@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(getApplicationContext(),"type something",Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    if (currentText.substring(currentText.length() - 1).equals("/") || currentText.substring(currentText.length() - 1).equals("*") || currentText.substring(currentText.length() - 1).equals("+") || currentText.substring(currentText.length() - 1).equals("-") || currentText.substring(currentText.length() - 1).equals(".")) {
+                    if (checkOperators(currentText)||currentText.substring(currentText.length() - 1).equals("/") || currentText.substring(currentText.length() - 1).equals("*") || currentText.substring(currentText.length() - 1).equals("+") || currentText.substring(currentText.length() - 1).equals("-") || currentText.substring(currentText.length() - 1).equals(".")) {
                         Toast.makeText(getApplicationContext(), "Invalid Input", Toast.LENGTH_SHORT).show();
                     } else {
                         // Evaluate the expression using BODMAS rule
@@ -95,6 +95,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 displayTextView.setText(currentText + buttonText);
                 break;
         }
+    }
+
+    public static boolean checkOperators(String str) {
+        if (str.length() < 2) {
+            return false;
+        }
+        char firstChar = str.charAt(0);
+        if (isOperator(firstChar)) {
+            return true;
+        }
+        char prevChar = firstChar;
+        for (int i = 1; i < str.length(); i++) {
+            char currChar = str.charAt(i);
+            if (!Character.isDigit(currChar) && !Character.isWhitespace(currChar) && !isOperator(currChar)) {
+                return true;
+            }
+            if (isOperator(prevChar) && isOperator(currChar)) {
+                return true;
+            }
+            prevChar = currChar;
+        }
+        return false;
+    }
+    private static boolean isOperator(char c) {
+        return c == '+' || c == '-' || c == '*' || c == '/';
     }
 
     private static boolean isDigit(char c) {
