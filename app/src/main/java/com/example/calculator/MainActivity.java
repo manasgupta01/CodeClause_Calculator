@@ -22,11 +22,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         displayTextView = findViewById(R.id.displayTextView);
-
         // Set onClickListener to all buttons
-
         findViewById(R.id.button1).setOnClickListener(this);
         findViewById(R.id.button0).setOnClickListener(this);
         findViewById(R.id.button2).setOnClickListener(this);
@@ -44,7 +41,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.buttonDecimal).setOnClickListener(this);
         findViewById(R.id.buttonClear).setOnClickListener(this);
         findViewById(R.id.buttonEquals).setOnClickListener(this);
-
         findViewById(R.id.buttonCloseParenthesis).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -57,18 +53,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
     }
-
     @Override
     public void onClick(View v) {
         // Get the current text in the displayTextView
         String currentText = displayTextView.getText().toString();
-
         // Get the button that was clicked
         Button button = (Button) v;
-
         // Get the text on the button
         String buttonText = button.getText().toString();
-
         switch (v.getId()) {
             case R.id.buttonClear:
                 // Clear the displayTextView
@@ -76,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.buttonEquals:
                 int n = currentText.length();
+                Log.i("curr",currentText.toString());
                 if(currentText.length()==0){
                     Toast.makeText(getApplicationContext(),"type something",Toast.LENGTH_SHORT).show();
                 }
@@ -96,8 +89,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
-
     public static boolean checkOperators(String str) {
+        Log.i("string",str.toString());
         if (str.length() < 2) {
             return false;
         }
@@ -105,21 +98,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (isOperator(firstChar)) {
             return true;
         }
-        char prevChar = firstChar;
-        for (int i = 1; i < str.length(); i++) {
-            char currChar = str.charAt(i);
-            if (!Character.isDigit(currChar) && !Character.isWhitespace(currChar) && !isOperator(currChar)) {
+        for (int i = 0; i < str.length()-1; i++) {
+            if (isOperator(str.charAt(i)) && isOperator(str.charAt(i+1))|| str.charAt(i)=='.'&&str.charAt(i+1)=='.') {
                 return true;
             }
-            if (isOperator(prevChar) && isOperator(currChar)) {
-                return true;
-            }
-            prevChar = currChar;
         }
         return false;
     }
     private static boolean isOperator(char c) {
-        return c == '+' || c == '-' || c == '*' || c == '/';
+        return c == '+' ||c=='-'||  c == '*' || c == '/';
     }
 
     private static boolean isDigit(char c) {
