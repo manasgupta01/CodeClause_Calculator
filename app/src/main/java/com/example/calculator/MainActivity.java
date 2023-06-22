@@ -114,33 +114,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private String evaluateExpression(String expression) {
-
         Vector<String> vec = new Vector<>();
-        String k ="";
-        for(int i=0;i<expression.length();i++){
-            Log.i("real", String.valueOf(expression.charAt(i)));
-            if(isDigit(expression.charAt(i))){
-                k=k+expression.charAt(i);
-                if(i==expression.length()-1){
-                    vec.add(k);
-                }
-            }
-            else{
-                    vec.add(k);
-                    k = "";
-                k=k+expression.charAt(i);
-                vec.add(k);
-                k="";
-            }
+        StringBuilder currentNumber = new StringBuilder();
+        boolean decimalEntered = false; // Flag to track if a decimal point has already been entered
 
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+
+            if (isDigit(c)) {
+                if (c == '.') {
+                    if (decimalEntered) {
+                        // Display error message or throw an exception for multiple decimal points
+                        showToast("Invalid input: Multiple decimal points in a number");
+                        return ""; // Or handle the error in an appropriate way
+                    }
+                    decimalEntered = true;
+                }
+                currentNumber.append(c);
+            } else if (isOperator(c)) {
+                if (currentNumber.length() > 0) {
+                    vec.add(currentNumber.toString());
+                    currentNumber.setLength(0);
+                    decimalEntered = false; // Reset the decimal flag for the next number
+                }
+                vec.add(String.valueOf(c));
+            }
         }
 
-
-        //Log.i("check",evaluatePostfix(infixToPostfix(vec)).toString());
+        if (currentNumber.length() > 0) {
+            vec.add(currentNumber.toString());
+        }
 
         return evaluatePostfix(infixToPostfix(vec)).toString();
-
     }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
 
     static int Prec(String ch)
     {
@@ -159,8 +170,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return -1;
     }
 
-    static Double evaluatePostfix(Vector<String> exp)
-    {
+    static Double evaluatePostfix(Vector<String> exp) {
         // Create a stack
         Stack<Double> stack = new Stack<>();
 
@@ -168,16 +178,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int i = 0; i < exp.size(); i++) {
             String c = exp.get(i);
 
-            // If the scanned character is an operand
-            // (number here), push it to the stack.
-            if ((c.length()==1 && onlyDigits(c,c.length()))||c.length()!=1) {
+            // If the scanned character is a valid number, push it to the stack
+            if (isNumber(c)) {
                 double d = Double.parseDouble(c);
                 stack.push(d);
-            }
-
-                //  If the scanned character is an operator, pop
-                //  two elements from stack apply the operator
-            else {
+            } else {
+                // If the scanned character is an operator, pop two elements from the stack and apply the operator
+                if (stack.size() < 2) {
+                    throw new IllegalArgumentException("Invalid postfix expression");
+                }
                 Double val1 = stack.pop();
                 Double val2 = stack.pop();
 
@@ -194,11 +203,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case '*':
                         stack.push(val2 * val1);
                         break;
+                    default:
+                        throw new IllegalArgumentException("Invalid operator: " + c);
                 }
             }
         }
+
+        if (stack.size() != 1) {
+            throw new IllegalArgumentException("Invalid postfix expression");
+        }
+
         return stack.pop();
     }
+
+    static boolean isNumber(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
 
 
     Vector<String>  infixToPostfix(Vector<String> exp)
@@ -271,24 +297,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      //   Log.i("final",result.toString());
         return result;
     }
-    public static boolean onlyDigits(String str, int n)
-    {
+    public static boolean onlyDigits(String str, int n) {
+        // Check if the string is empty or null
+        if (str == null || str.isEmpty()) {
+            return false;
+        }
 
-        // Traverse the string from
-        // start to end
-        for (int i = 0; i < n; i++) {
-
-            // Check if the specified
-            // character is a not digit
-            // then return false,
-            // else return false
-            if (!Character.isDigit(str.charAt(i))) {
-                return false;
+        // Count the number of decimal points
+        int decimalCount = 0;
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c == '.') {
+                decimalCount++;
+                if (decimalCount > 1) {
+                    return false; // More than one decimal point found
+                }
+            } else if (!Character.isDigit(c)) {
+                return false; // Found a non-digit character
             }
         }
-        // If we reach here that means all
-        // the characters were digits,
-        // so we return true
-        return true;
+
+        // Check if the string length exceeds the limit
+        return str.length() <= n;
     }
+
 }
